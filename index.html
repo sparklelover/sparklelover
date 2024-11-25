@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voturi</title>
+</head>
+<body>
+    <h1>Voturi ramase</h1>
+    <p>Total: <span id="total">Loading</span></p>
+
+    <script>
+        async function main() {
+            try {
+                const response = await fetch('https://prezenta.roaep.ro/prezidentiale24112024/pv/romania/results/');
+                if (!response.ok) throw new Error(`err: ${response.status}`);
+                
+                const text = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(text, 'text/html');
+
+                const votes = doc.querySelectorAll('.text-right.display-flex.flex-column');
+
+                const total = Array.from(votes).reduce((sum, el) => {
+                    const span = el.querySelector('span');
+                    return sum + (span ? parseFloat(span.textContent.replace(/\./g, '').replace(',', '.')) : 0);
+                }, 0);
+
+                document.getElementById('total').textContent = total.toLocaleString();
+            } catch (error) {
+                console.error('error loading data:', error);
+                document.getElementById('total').textContent = 'error loading data';
+            }
+        }
+        main();
+    </script>
+</body>
+</html>
